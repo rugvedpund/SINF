@@ -3,7 +3,8 @@ from sinf.load_data import *
 import argparse
 
 def GIS(data_train, data_validate=None, iteration=None, weight_train=None, weight_validate=None, K=None, M=None, KDE=True, b_factor=1, alpha=None, bounds=None,
-        edge_bins=None, ndata_A=None, MSWD_max_iter=None, NBfirstlayer=False, Whiten=False, batchsize=None, nocuda=False, patch=False, shape=[28,28,1], model=None, verbose=True):
+        edge_bins=None, ndata_A=None, MSWD_max_iter=None, NBfirstlayer=False, Whiten=False, batchsize=None, nocuda=False, patch=False, shape=[28,28,1], model=None, verbose=True,
+        delta_logp=np.inf):
     
     '''
     data_train: (ndata_train, ndim).
@@ -28,6 +29,7 @@ def GIS(data_train, data_validate=None, iteration=None, weight_train=None, weigh
     shape: sequence, optional. The shape of the image datasets, if patch is enabled.
     model: GIS model, optional. Trained GIS model. If provided, new iterations will be added in the model.
     verbose: bool, optional. Whether to print training information.
+    delta_logp: positive float number, optional. The minimum difference between training logp and validation logp to stop training. Only useful when data_validate is provided.
     '''
 
     assert data_validate is not None or iteration is not None
@@ -48,6 +50,7 @@ def GIS(data_train, data_validate=None, iteration=None, weight_train=None, weigh
         M = max(min(200, int(ndata**0.5)), 50)
     if alpha is None:
         alpha = (1-0.02*math.log10(ndata), 1-0.001*math.log10(ndata))
+    print(alpha)
     if bounds is not None:
         assert len(bounds) == ndim
         for i in range(ndim):
@@ -232,6 +235,10 @@ def GIS(data_train, data_validate=None, iteration=None, weight_train=None, weigh
             else:
                 wait += 1
             if wait == maxwait:
+                model.layer = model.layer[:best_Nlayer]
+                break
+            if abs(logp_train-logp_validate) > delta_logp:
+                print('breaking out...')
                 model.layer = model.layer[:best_Nlayer]
                 break
 
