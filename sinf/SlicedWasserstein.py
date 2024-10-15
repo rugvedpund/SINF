@@ -101,7 +101,7 @@ def maxKSWDdirection(x, x2='gaussian', weight=None, K=None, maxiter=200,  p=2, e
         ATi = torch.randn(ndim, K, device=x.device)
     else:
         assert ATi.shape[0] == ndim and ATi.shape[1] == K 
-    Q, R = torch.qr(ATi)
+    Q, R = torch.linalg.qr(ATi)
     L = torch.sign(torch.diag(R))
     AT = (Q * L).T
 

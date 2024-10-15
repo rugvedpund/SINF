@@ -491,7 +491,7 @@ class SlicedTransport(nn.Module):
         self.M = M
 
         ATi = torch.randn(self.ndim, self.K)
-        Q, R = torch.qr(ATi)
+        Q, R = torch.linalg.qr(ATi)
         L = torch.sign(torch.diag(R))
         A = (Q * L)
 
@@ -534,7 +534,7 @@ class SlicedTransport(nn.Module):
         with torch.no_grad():
             SWD, indices = torch.sort(SWD, descending=True)
             A = A[:,indices]
-            self.A[:] = torch.qr(A)[0] 
+            self.A[:] = torch.linalg.qr(A)[0] 
 
         if verbose:
             t = end_timing(tstart, self.A.device)
